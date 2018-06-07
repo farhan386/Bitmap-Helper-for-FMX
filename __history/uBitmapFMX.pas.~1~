@@ -1,0 +1,77 @@
+unit uBitmapFMX;
+
+interface
+
+uses
+  system.classes, system.types, fmx.graphics, idhttp, system.sysutils, system.threading;
+
+type
+  TBmpHlp = class helper for TBitmap
+  public
+    procedure loadImgFromUrl(url:string);
+  end;
+implementation
+
+{ TBmpHlp }
+
+procedure TBmpHlp.loadImgFromUrl(url: string);
+var
+  aTask: ITask;
+begin
+
+aTask := TTask.Create(procedure()
+var
+  idh: TIdHttp;
+  strm : TMemoryStream;
+  //jpg :TJPEGImage;
+  ext: string;
+  //png: TPngImage;
+begin
+  ext := url.Substring(url.Length-3,3);
+  idh:=tidhttp.Create(nil);
+  strm:=TMemoryStream.Create;
+
+  try
+      idh.Get(url,strm);
+      if strm.Size >0 then
+      begin
+        strm.Position:=0;
+
+          if ext='jpg' then
+            begin
+            jpg := tjpegimage.create;
+            tthread.Synchronize(tthread.CurrentThread, procedure
+              begin
+                try
+                  jpg.loadFromStream(strm);
+                  assign(jpg);
+                finally
+                  jpg.Free;
+                end;
+              end);
+            end
+          else if ext='png' then
+            begin
+              png := TPngImage.Create;
+            tthread.Synchronize(tthread.CurrentThread, procedure
+              begin
+                try
+                  png.LoadFromStream(strm);
+                  assign(png);
+                finally
+                  png.Free;
+                end;
+              end);
+            end;
+      end;
+  finally
+    idh.Free;
+    strm.Free;
+  end;
+end);
+atask.Start;
+
+end;
+
+end.
+
